@@ -13,13 +13,18 @@ standard is in `~/agents/projects.md`.
    (`my-project`). If it is not clear, ask.
 2. Decide the parent folder: the folder you were opened in, unless the user
    names another. The project goes in `<parent>/<name>`.
-3. Run the script. On Windows use `py -3` if `python3` is not found:
+3. Run the script. On Linux or macOS:
 
        python3 ~/.claude/skills/new-project/scripts/new_project.py <name> --parent <parent>
 
-   If `CLAUDE_CONFIG_DIR` is set, the skill is under that folder instead of
-   `~/.claude`. Add `--dry-run` first if the user wants to see the files
-   before they are made.
+   On Windows (PowerShell):
+
+       $cfg = if ($env:CLAUDE_CONFIG_DIR) { $env:CLAUDE_CONFIG_DIR } else { "$env:USERPROFILE\.claude" }
+       py -3 "$cfg\skills\new-project\scripts\new_project.py" <name> --parent <parent>
+
+   On Linux or macOS, if `CLAUDE_CONFIG_DIR` is set, the skill is under that
+   folder instead of `~/.claude`. Add `--dry-run` first if the user wants to
+   see the files before they are made.
 4. The script refuses when `<parent>/<name>` already exists. Tell the user
    and stop; never overwrite.
 5. Tell the user the folder path and the file list. Say that the next step

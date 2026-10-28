@@ -16,7 +16,7 @@ NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 def build(name, parent, templates, today, dry_run=False):
     """Return the list of files made (relative to the project folder)."""
-    if not NAME_RE.match(name):
+    if not NAME_RE.fullmatch(name):
         raise SystemExit(f"bad name {name!r}: use lowercase letters, digits and dashes")
     if not os.path.isdir(templates):
         raise SystemExit(f"templates folder not found: {templates}")
