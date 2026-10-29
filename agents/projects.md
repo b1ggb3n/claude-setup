@@ -21,8 +21,8 @@ Projects live in the projects root: the folder named in
 
 | File | What goes in it |
 |---|---|
-| `README.md` | What it is, how to run or use it, its files. Stable, no dated log. |
-| `PROJECT.md` | `State:` line, Goal, Scope, Phases, Open questions, Next session, dated Status log. |
+| `README.md` | What it is, how to run or use it, its files, and the stable facts a fresh chat needs: people and their roles, links, standing rules. Stable, no dated log. |
+| `PROJECT.md` | `State:` line, Goal, Scope, Phases, Access needed, Open questions, Next session, dated Status log. |
 | `TODO.md` | Ordered tasks for the current and next phase (format below). |
 | `docs/DECISIONS.md` | What was decided, why, what else was considered. |
 | `docs/BUILD-LOG.md` | What was built or changed, and how. |
@@ -65,6 +65,21 @@ A script builds the root todo from it, so keep this shape:
 
 - Work on a project in its own folder. State lives in `TODO.md` and
   `PROJECT.md`, so a fresh chat there picks up without old history.
+
+## Facts and sources
+
+- Link every outside fact to its source: a URL or a file path, not "the docs".
+- Mark a fact you have not checked yourself: `(unverified: <source>)`. Remove
+  the mark once it is checked, or correct the fact.
+- Research and its sources go in the project's `docs/`, not in a note outside
+  the folder. An outside note may point here.
+
+## Access needed
+
+`PROJECT.md` lists what the work will need before it needs it: accounts,
+admin roles, keys, approvals, physical access. One line each: what, why,
+who grants it, and whether you have it. Write "None known yet." when empty.
+A missing item that blocks the next task makes the project Waiting.
 
 ## When you change a project
 

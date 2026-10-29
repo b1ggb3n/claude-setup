@@ -4,25 +4,68 @@ A portable setup for Claude Code: a project standard, templates, working
 rules, two small hooks and six skills. Use it as it is, or read it to see
 how the pieces fit.
 
-## What is in it
+## Why it works this way
 
-| Path | What it is |
+- **The docs are the memory, not the chat.** Every project keeps its state,
+  next step and history in the same few files. Any fresh session, or any
+  person, can pick it up cold. Nothing depends on remembering an old chat.
+- **Short sessions.** Claude re-reads the whole conversation every turn, so
+  a long session costs more and more. Work goes in phases. At the end of
+  each phase, `/wrap` writes the handoff and a new session starts clean.
+- **One standard everywhere.** Every project has the same files in the same
+  shape. You always know where to look, and scripts can read them (the root
+  todo, `status`).
+- **Plain English for people first.** The docs are written for the user.
+  Claude reads the same files; there is no second copy for agents.
+- **Ask before anything hard to undo.** Deleting, overwriting, pushing or
+  sending anything outside needs a clear yes. Exploring an idea is never a
+  go signal.
+- **Another model checks the work.** A second model reviews builds and
+  answers research, because one model reviewing itself misses its own
+  mistakes. Its output is treated as data: each finding is checked before
+  anything is fixed.
+- **Tests first for logic, honest reports.** Rules, math and parsing get a
+  failing test before the code. A failed test or a skipped step is reported
+  as it is.
+- **Secrets are never opened, printed or committed.**
+
+## What each piece does
+
+### Rules (always loaded)
+
+| Piece | What it does | When it matters |
+|---|---|---|
+| `CLAUDE.md` | Claude-specific notes; loads `AGENTS.md`. | Every session, automatically. |
+| `AGENTS.md` | Rules for any AI agent: where to start, hard rules, which module to read. | Every session. Written so other agents can follow it too. |
+| `agents/projects.md` | The project standard: the files, the `State:` line, the TODO format, phases and wrap-up. | Starting a project, changing its docs, ending a session. |
+| `agents/working.md` | How to work with the user: when to act and when to ask, tests first, keeping usage down. | All the time. |
+| `agents/secrets.md` | How to treat credentials, `.env` files and keys. | Anywhere near a secret. |
+| `agents/templates/` | The starting text for every project file. | Used by `new-project`. |
+| `agents/root-todo.py` | Builds one list of every project's state and next task into `~/TODO.md`. | Used by `status` and `/wrap`; run it any time. |
+
+### Skills (Claude uses them when the request fits, or you call them by name)
+
+| Skill | What it does | Use it when |
+|---|---|---|
+| `new-project` | Makes a project folder with the full file set, fills in name and date, adds its line to `INDEX.md`. | "Start a project called X." |
+| `wrap` | Brings the project docs up to date (State line, TODO, logs, index), writes the "Next session" handoff, and lists friction worth fixing. | `/wrap`, "let's stop", "new session", end of a phase, or when the context alarm fires. |
+| `status` | Lists every project by state: priority first, then your tasks, active, waiting and paused; suggests the next task. | "What's open?", start of the day, choosing what to work on. |
+| `second-opinion` | Sends a diff, plan or idea to another model for review, checks each finding, fixes only the confirmed ones. Needs another model's CLI (`codex`, `gemini`, `agy`, or similar). | After a build step, before calling it done; for math or logic checks; "what would another model think?" |
+| `research` | Asks another model a research question, brings back findings with sources, checks the ones that matter. Needs another model's CLI. | Open questions, docs lookups, comparisons, "look into X". |
+| `archive-project` | Folds a finished project's state into its README, moves it into `archive/`, and updates `INDEX.md` and `archive/README.md`. | `/archive-project <name>` when a project is done or dropped. Manual only. |
+
+### Hooks (run on their own)
+
+| Hook | What it does | Why |
+|---|---|---|
+| `context_alarm.py` | Warns once a session's context passes 200k tokens. | Long sessions cost the most; this is the cue to `/wrap`. |
+| `post_edit_check.py` | Syntax-checks Python, shell and JSON files right after Claude edits them, and tells Claude at once on an error. | A broken file is caught at the edit, not later. |
+
+### Install
+
+| Piece | What it does |
 |---|---|
-| `AGENTS.md` | Rules for any AI agent: where to start, hard rules, modules. |
-| `CLAUDE.md` | Claude-specific notes; imports `AGENTS.md`. |
-| `agents/projects.md` | The project standard: files, State line, TODO format, wrap-up. |
-| `agents/working.md`, `agents/secrets.md` | How to work with the user; how to treat secrets. |
-| `agents/templates/` | Templates for every project file (below). |
-| `agents/root-todo.py` | Builds one todo list from every project's State line and first open task. |
-| `skills/new-project/` | Start a project folder from the templates and add it to `INDEX.md`. |
-| `skills/wrap/` | `/wrap`: end a phase or session, bring the docs and index up to date, write the handoff. |
-| `skills/status/` | "What's open?": every project's state and next task. |
-| `skills/archive-project/` | `/archive-project <name>`: retire a project into `archive/` and update the index. |
-| `skills/second-opinion/` | Have another model review a change or plan, then check its findings. Needs another model's CLI. |
-| `skills/research/` | Ask another model a research question; findings with sources. Needs another model's CLI. |
-| `hooks/context_alarm.py` | Warns when a session's context grows past 200k tokens. |
-| `hooks/post_edit_check.py` | Syntax-checks a file right after Claude edits it. |
-| `install.ps1` | Installs or updates all of the above. |
+| `install.ps1` | Installs or updates everything above on Windows (also runs in PowerShell 7 on Linux or macOS). Details below. |
 
 ## How projects are laid out
 
