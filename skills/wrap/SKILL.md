@@ -29,6 +29,9 @@ in context.
 4. **Root todo**: run `~/agents/root-todo.py` so `~/TODO.md` shows this
    project's new state and next task.
 5. **README.md**: only if files, commands or how-to-run changed.
+6. **`INDEX.md`** in the projects root (`~/agents/projects.md`): if the
+   project's goal changed or was set, or something was added, moved or
+   retired, fix its line. Retiring a project is the `archive-project` skill.
 7. **Lessons**: for each non-obvious gotcha hit this session (a wrong flag,
    a trap in a service, a fix that took several tries), write one line where
    the next session will read it: the project's `CLAUDE.md` or README

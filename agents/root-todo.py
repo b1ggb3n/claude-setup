@@ -3,7 +3,9 @@
 
 Format of both: ~/agents/projects.md. Run by /wrap; safe to run any time.
 Usage: root-todo.py [output path]   (default ~/TODO.md; "-" prints to stdout)
-Project folders: globs in ~/agents/root-todo.conf (default projects/*/PROJECT.md).
+Project folders: globs in ~/agents/root-todo.conf; without it, every
+<root>/*/PROJECT.md, where <root> is the folder named in
+~/agents/projects-root.txt (default ~/projects).
 """
 import glob
 import os
@@ -13,17 +15,28 @@ from datetime import date
 
 HOME = os.path.expanduser("~")
 CONF = os.path.join(HOME, "agents", "root-todo.conf")
-DEFAULT_GLOBS = ["projects/*/PROJECT.md"]
+ROOT_FILE = os.path.join(HOME, "agents", "projects-root.txt")
+
+
+def projects_root():
+    """The folder that holds the projects, INDEX.md and archive/."""
+    try:
+        with open(ROOT_FILE, encoding="utf-8-sig") as f:
+            root = f.read().strip()
+    except FileNotFoundError:
+        root = ""
+    return os.path.expanduser(root) if root else os.path.join(HOME, "projects")
 
 
 def load_globs():
     """Project folders: one glob per line (relative to ~) in root-todo.conf."""
+    default = [os.path.join(projects_root(), "*", "PROJECT.md")]
     try:
         with open(CONF) as f:
             globs = [l.strip() for l in f if l.strip() and not l.startswith("#")]
     except FileNotFoundError:
-        return DEFAULT_GLOBS
-    return globs or DEFAULT_GLOBS
+        return default
+    return globs or default
 STATE_RE = re.compile(r"^State: (Active|Paused|Waiting|Done)(?: \(([^)]*)\))?, (\d{4}-\d\d-\d\d)\. ?(.*)$")
 TASK_RE = re.compile(r"^- \[ \] (\d+)\. \*\*(.+?)\*\* \(owner: ([^)]+)\)")
 

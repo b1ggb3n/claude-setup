@@ -8,7 +8,10 @@ Tool-specific setup lives elsewhere (`CLAUDE.md` for Claude).
 1. If you start in a project folder, read its `PROJECT.md` and `TODO.md`
    first (state, phase, next task), then its `README.md` (how to run it).
    If the folder has a `CLAUDE.md`, its notes apply to you too.
-2. Read the module below that matches what you're doing.
+2. Before looking anywhere else, read `INDEX.md` in the projects root (the
+   folder named in `~/agents/projects-root.txt`, default `~/projects`). It
+   maps every project and the archive. Open only the files it points to.
+3. Read the module below that matches what you're doing.
 
 ## Hard rules
 

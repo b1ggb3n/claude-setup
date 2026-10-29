@@ -8,7 +8,8 @@ Clones or pulls the setup repo, then copies:
   CLAUDE.md, skills\, hooks\   into the Claude config folder
 ($env:CLAUDE_CONFIG_DIR, or $HOME\.claude when it is unset). A file that
 exists and differs is backed up as <file>.bak-<time> before it is replaced.
-Then adds the two hooks to settings.json when Python is found, leaving every
+Saves the projects root (-ProjectsRoot) and creates that folder. Then adds
+the two hooks to settings.json when Python is found, leaving every
 other setting and hook as it is (settings.json is backed up first).
 Safe to re-run: a second run with nothing new changes nothing.
 Works in Windows PowerShell 5.1 and PowerShell 7.
@@ -18,10 +19,16 @@ Print every change, make none.
 
 .PARAMETER Source
 Use this folder as the setup files instead of cloning (tests, offline use).
+
+.PARAMETER ProjectsRoot
+The folder that holds your projects, INDEX.md and archive\. Saved in
+agents\projects-root.txt on the first run (default $HOME\projects); pass it
+again to change it.
 #>
 param(
     [switch]$DryRun,
     [string]$Source,
+    [string]$ProjectsRoot,
     [string]$HomeDir = $HOME,
     [string]$ConfigDir,
     [string]$RepoDir,
@@ -168,7 +175,29 @@ try {
         }
     }
 
-    # 4. Hooks in settings.json.
+    # 4. Projects root: saved once, changed only when -ProjectsRoot is passed.
+    $rootFile = Join-Path (Join-Path $HomeDir "agents") "projects-root.txt"
+    $savedRoot = $null
+    if (Test-Path -LiteralPath $rootFile) { $savedRoot = ([IO.File]::ReadAllText($rootFile)).Trim() }
+    $root = $savedRoot
+    # Save an absolute path: the scripts that read it run from other folders.
+    if ($ProjectsRoot) { $ProjectsRoot = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ProjectsRoot) }
+    if ($ProjectsRoot -and $ProjectsRoot -ne $savedRoot) {
+        $root = $ProjectsRoot
+        if ($savedRoot) { Say "change the projects root from $savedRoot to $root in $rootFile" }
+        else { Say "save the projects root $root in $rootFile" }
+        if (-not $DryRun) { [IO.File]::WriteAllText($rootFile, "$root`n", $Utf8) }
+    } elseif (-not $savedRoot) {
+        $root = Join-Path $HomeDir "projects"
+        Say "save the projects root $root in $rootFile (default; pass -ProjectsRoot to choose)"
+        if (-not $DryRun) { [IO.File]::WriteAllText($rootFile, "$root`n", $Utf8) }
+    }
+    if (-not (Test-Path -LiteralPath $root)) {
+        Say "create the projects folder $root"
+        if (-not $DryRun) { New-Item -ItemType Directory -Force $root | Out-Null }
+    }
+
+    # 5. Hooks in settings.json.
     if (-not $Python) {
         Write-Host "Python not found: hooks not added to settings.json (the files are copied)."
     } elseif ($DryRun) {

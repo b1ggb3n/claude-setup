@@ -5,7 +5,17 @@ Claude reads the same files. There is no second copy for agents; a project
 `CLAUDE.md`, if any, is a thin pointer plus gotchas.
 
 Templates for every file: `~/agents/templates/` (`{{name}}` and `{{date}}`
-are filled in by the `new-project` skill). Archived projects keep only their README.
+are filled in by the `new-project` skill).
+
+Projects live in the projects root: the folder named in
+`~/agents/projects-root.txt` (default `~/projects`). It also holds:
+
+- `INDEX.md`: the map, one line per project (name and goal) under
+  `## Projects`, retired ones under `## Archive`. `new-project` adds the
+  line with "goal not set yet"; replace that with the goal once it is set.
+- `archive/`: retired projects, moved there by the `archive-project`
+  skill, listed in `archive/README.md`. An archived project keeps its
+  README (with an `## Archived` section) and `docs/`.
 
 ## The files
 
@@ -62,6 +72,8 @@ A script builds the root todo from it, so keep this shape:
   `State:` line.
 - Log decisions, builds, issues and runbook changes in `docs/`.
 - Propose changes to Goal or Scope; don't make them unasked.
+- If you add, move or retire something, update `INDEX.md` in the projects
+  root.
 - Drafts for the user to review go in the project folder, never in a
   session scratchpad: the scratchpad is gone when the session ends.
 
@@ -83,3 +95,7 @@ and a long job can stop at any point without losing anything.
 - Why: a session's whole context is re-sent every turn. One 36-hour session
   reached 737k tokens and used up the 5-hour limit.
 
+## Where everything stands
+
+Use the `status` skill, or run `~/agents/root-todo.py -`: every project's
+`State:` line and next task, from the projects root.
